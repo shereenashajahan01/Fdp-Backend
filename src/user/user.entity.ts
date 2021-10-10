@@ -3,8 +3,8 @@ import {  Column, Entity, PrimaryColumn } from "typeorm";
 
 
 
-@Entity('users')
-export class user  {
+@Entity('users_table')
+export class users  {
     @Column ({type:'varchar',length: 255,nullable:true})
     company_id: string ;
     @Column ({type:'varchar',length: 255,nullable:true})

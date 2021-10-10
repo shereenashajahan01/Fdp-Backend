@@ -8,97 +8,152 @@ import { API_URL } from "../../shared/urls";
 const express = require("express");
 const nodemailer = require("nodemailer");
 import { Repository } from "typeorm";
-import { user } from "../user.entity";
+import { users } from "../user.entity";
+import { token } from "src/shared/token";
+import { creden } from "src/shared/creden";
+
 const fastcsv = require("fast-csv");
-const Pool = require("pg").Pool;
 var fs = require("fs");
-const pool = new Pool({
-  host: "localhost",
-  user: "postgres",
-  database: "uaefoodplatform",
-  password: "postgres",
-  port: 5432
-});
+const pool = require('./pgdb');
+const hbs = require('nodemailer-handlebars');
 Injectable();
 export class AuthService {
   constructor(
-    @InjectRepository(user) private tasksRepo: Repository<user>,
+    @InjectRepository(users) private tasksRepo: Repository<users>,
     private httpService: HttpService
   ) {}
   findAll() {
     return this.tasksRepo.find();
   }
-  findmail(user_email: any) {
+  findmail(user_email: any,firstname:any,lastname:any,designation:any,mobile_number:any,company:any) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "officefdp87@gmail.com",
-        pass: "Fdpproject123",
+        user: creden.user,
+        pass: creden.pass,
       },
-    });
+    });   
+transporter.use('compile',hbs({
+  viewEngine: {
+      extname: '.handlebars',
+      layoutsDir: './views/',
+      defaultLayout : 'index',
+  },
+  viewPath: './views/'
+}))
     let mailOptions = {
-      from: '"No reply" <officefdp87@gmail.com>',
+      from: '"No reply"<officefdp87@gmail.com>',
       to: user_email,
-      subject: "Node Contact Request",
-      text: "Hello world?",
-      // html: output // html body
+      subject: " Contact Request",
+      //text: 'Wooohooo it works!!',
+      template:'index',
+      context: {
+        name: firstname,
+        company: company,
+        email: user_email,
+        Phone: mobile_number
+    },
+    //   attachments: [{
+    //     filename: 'flower.jpg',
+    //     path:__filename+"/flower.jpg",
+    //     cid: 'flower' //same cid value as in the html img src
+    // }]
+     // context: output
     };
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         return console.log(error);
       }
+      console.log('Message sent: %s', info.messageId);   
+      return(info.messageId);  
     });
-    return "email send";
   }
   findOne(uid: string) {
     return this.tasksRepo.findOne(uid);
   }
-  finduser(paths): Observable<AxiosResponse<[]>> {
+  gettoken(user_details): Observable<AxiosResponse<[]>> {
+    console.log(user_details)
     return this.httpService
-      .get(API_URL + paths)
+    .post("https://fdp-strapi-backend.herokuapp.com/auth/local", user_details)
+    .pipe(map((response) => response.data));
+  }
+  finduserquery(paths,query): Observable<AxiosResponse<[]>> {
+    return this.httpService.get(API_URL + paths+'?'+ query,{
+         headers: {
+           Authorization: `Bearer ${token}`,
+         }
+        }
+      )
+.pipe(map((response) => response.data));
+  }
+  finduser(paths): Observable<AxiosResponse<[]>> {
+     return this.httpService.get(API_URL + paths,{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+      )
+.pipe(map((response) => response.data));
+  }
+  finduserid(paths,uid): Observable<AxiosResponse<[]>> {
+    return this.httpService
+      .get(API_URL + paths + "/"+uid,{
+        headers: {
+          Authorization: `Bearer ${token}`,
+       }}
+       )
       .pipe(map((response) => response.data));
   }
   delete(paths: string, uid: string): Observable<AxiosResponse<[]>> {
     console.log(API_URL + paths + "/" + uid);
     return this.httpService
-      .delete(API_URL + paths + "/" + uid)
+      .delete(API_URL + paths + "/" + uid,{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }})
       .pipe(map((response) => response.data));
   }
   adduser(paths: string, data): Observable<AxiosResponse<[]>> {
     return this.httpService
-      .post(API_URL + paths, data)
+      .post(API_URL + paths,{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }},data)
       .pipe(map((response) => response.data));
   }
   updateuser(paths: string, uid: string, data): Observable<AxiosResponse<[]>> {
     console.log(data);
     return this.httpService
-      .put(API_URL + paths + "/" + uid, data)
+      .put(API_URL + paths + "/" + uid,{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }},data)
       .pipe(map((response) => response.data));
   }
-  create(users: any, uid: any) {
-    const newTask = new user();
-    newTask.company_id = users.company_id;
-    newTask.firstname = users.firstname;
-    newTask.lastname = users.lastname;
-    newTask.sex = users.sex;
-    newTask.date_of_birth = users.date_of_birth;
-    newTask.mobile_number = users.mobile_number;
-    newTask.designation = users.designation;
-    newTask.job_description = users.job_description;
-    newTask.portfolio = users.portfolio;
-    newTask.city = users.city;
-    newTask.country = users.country;
-    newTask.official_number = users.official_number;
-    newTask.primary_email = users.primary_email;
-    newTask.password = users.password;
-    newTask.secondary_email = users.secondary_email;
-    newTask.current_comapnay_experience = users.current_comapnay_experience;
-    newTask.previous_company = users.previous_company;
-    newTask.company = users.company;
-    newTask.linkdin = users.linkdin;
-    newTask.twitter = users.twitter;
-    newTask.instagram = users.instagram;
-    newTask.role = users.role;
+  create(userss: any, uid: any) {
+    const newTask = new users();
+    newTask.company_id = userss.company_id;
+    newTask.firstname = userss.firstname;
+    newTask.lastname = userss.lastname;
+    newTask.sex = userss.sex;
+    newTask.date_of_birth = userss.date_of_birth;
+    newTask.mobile_number = userss.mobile_number;
+    newTask.designation = userss.designation;
+    newTask.job_description = userss.job_description;
+    newTask.portfolio = userss.portfolio;
+    newTask.city = userss.city;
+    newTask.country = userss.country;
+    newTask.official_number = userss.official_number;
+    newTask.primary_email = userss.primary_email;
+    newTask.password = userss.password;
+    newTask.secondary_email = userss.secondary_email;
+    newTask.current_comapnay_experience = userss.current_comapnay_experience;
+    newTask.previous_company = userss.previous_company;
+    newTask.company = userss.company;
+    newTask.linkdin = userss.linkdin;
+    newTask.twitter = userss.twitter;
+    newTask.instagram = userss.instagram;
+    newTask.role = userss.role;
     newTask.user_id = uid;
     return this.tasksRepo.save(newTask);
   }
@@ -113,7 +168,7 @@ export class AuthService {
       .on("end", function () {
         csvData.shift();
         const query =
-          "INSERT INTO users(company_id,firstname,lastname,sex,date_of_birth,mobile_number,designation,job_description,portfolio,city,country,official_number,primary_email,password,secondary_email,current_comapnay_experience,previous_company,company,linkdin,twitter,instagram,role,action,uid) VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)";
+          "INSERT INTO users() VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)";
         pool.connect((err, client, done) => {
           if (err) throw err;
           try {

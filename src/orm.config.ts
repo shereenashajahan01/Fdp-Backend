@@ -8,6 +8,10 @@ export const config: TypeOrmModuleOptions ={
     database : 'daqom94cuir0e9',
     synchronize : true,
     entities: ['dist/**/*.entity{.ts,.js}'],
+     ssl: {      /* <----- Add SSL option */
+        require: true,
+        rejectUnauthorized: false 
+      }
 
 };
 
