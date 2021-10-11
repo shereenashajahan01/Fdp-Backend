@@ -51,6 +51,7 @@
     "jszip": "^3.7.1",
     "nest-csv-parser": "^2.0.4",
     "nodemailer": "^6.6.5",
+    "nodemailer-handlebars": "^1.0.1",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
@@ -72,8 +73,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "firebase-functions-test": "^0.1.6",
-        "fork-ts-checker-webpack-plugin": "^6.3.3",
-
+    "fork-ts-checker-webpack-plugin": "^6.3.3",
     "jest": "^27.2.4",
     "prettier": "^2.4.1",
     "supertest": "^6.1.3",
