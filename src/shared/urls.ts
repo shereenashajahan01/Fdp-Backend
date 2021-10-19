@@ -1,1 +1,1 @@
-export const API_URL = "https://fdp-strapi-backend.herokuapp.com/";
+export const API_URL = "http://50.17.102.76:1337/";

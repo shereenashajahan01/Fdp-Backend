@@ -44,7 +44,7 @@ transporter.use('compile',hbs({
     let mailOptions = {
       from: '"No reply"<officefdp87@gmail.com>',
       to: user_email,
-      subject: " Contact Request",
+      subject: "Registration Confirmation : UAE Food Platform",
       //text: 'Wooohooo it works!!',
       template:'index',
       context: {
